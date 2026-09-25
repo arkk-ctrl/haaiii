@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Our First Monthsary Quest 💗</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#11151d;color:#fff;font-family:Arial,sans-serif}
+#gameWrap{position:relative;width:100vw;height:100vh;overflow:hidden}
+canvas{display:block;width:100%;height:100%;background:#203526;image-rendering:pixelated;image-rendering:crisp-edges}
+#hud{position:absolute;top:12px;left:12px;width:min(365px,calc(100% - 24px));padding:12px 14px;background:#10121bd9;border:1px solid #ffffff2b;border-radius:16px;z-index:10;backdrop-filter:blur(6px)}
+.barRow{margin-bottom:7px}.label{font-size:11px;opacity:.85;margin-bottom:3px}.bar{height:10px;background:#343642;border-radius:20px;overflow:hidden}.fill{height:100%;transition:width .18s}.hp{background:#ef6680}.xp{background:#7e8fff}.love{background:#ff78b5}
+#stats{display:flex;justify-content:space-between;font-size:12px;margin-top:7px}
+#zoneName{position:absolute;right:14px;top:14px;padding:8px 12px;border-radius:12px;background:#10121bc7;font-size:12px;z-index:10}
+#hint{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);padding:8px 13px;border-radius:12px;background:#10121bc7;font-size:12px;z-index:10;text-align:center;pointer-events:none;white-space:nowrap}
+#dialogue,#combat,#victory,#message{position:absolute;inset:0;display:none;z-index:30}
+#dialogue{align-items:flex-end;justify-content:center;padding:20px}
+.dialogueBox{width:min(720px,100%);padding:18px;background:#11131bf7;border:2px solid #ffffff3d;border-radius:18px;box-shadow:0 10px 40px #0008}
+#dialogueName{color:#ff9fc3;font-weight:900;margin-bottom:6px}.dialogueText{line-height:1.55}.small{font-size:11px;opacity:.55;text-align:right;margin-top:9px}
+#combat{align-items:center;justify-content:center;background:#08090fd8;padding:18px}
+.combatBox{width:min(680px,100%);padding:24px;background:#191923;border:1px solid #555;border-radius:22px;text-align:center}
+#combatEnemy{font-size:25px;font-weight:900;margin-bottom:8px}.enemyBar{height:15px;background:#34343e;border-radius:20px;overflow:hidden;margin:10px 0 18px}.enemyFill{height:100%;background:#ed5f78;transition:width .2s}
+#combatText{min-height:42px;line-height:1.45}.actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:15px}
+button{border:0;border-radius:12px;padding:12px 17px;color:#fff;background:#3a3e4d;font-weight:800;cursor:pointer}
+button:hover{filter:brightness(1.15)}.attack{background:#a63d55}.wrath{background:#914c9e}.hug{background:#d55791}
+#victory{align-items:center;justify-content:center;background:radial-gradient(circle,#ffc4df,#744766 52%,#14111b);text-align:center;padding:20px}
+.victoryTitle{font-size:clamp(52px,11vw,100px);font-weight:900;text-shadow:0 0 28px #ff74b4}.victorySub{font-size:18px;line-height:1.6}
+#message{overflow:auto;background:radial-gradient(circle at top,#ffe4ef,#82506a 58%,#17121d);padding:35px 18px}
+.messageBox{max-width:720px;margin:0 auto;padding:30px;background:#16121bd9;border:1px solid #ffffff30;border-radius:24px;line-height:1.8}
+.messageBox h1{text-align:center;color:#ffb6d5}.heart{text-align:center;font-size:56px}
+#touch{position:absolute;right:14px;bottom:55px;display:none;grid-template-columns:52px 52px 52px;grid-template-rows:52px 52px;gap:5px;z-index:15}
+.pad{display:grid;place-items:center;background:#11151dcc;border:1px solid #ffffff2e;border-radius:13px;font-size:20px;user-select:none}.empty{visibility:hidden}
+@media(max-width:700px){#touch{display:grid}#hint{bottom:10px;max-width:80%;white-space:normal}}
+
+#bagButton{position:absolute;right:14px;top:58px;z-index:12;background:#6d4a91;border:1px solid #ffffff35;box-shadow:0 6px 18px #0005}
+#inventory{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#08090fdc;z-index:50;padding:18px}
+.inventoryBox{width:min(820px,100%);max-height:min(88vh,760px);overflow:auto;background:#171522;border:2px solid #ffffff2b;border-radius:24px;padding:22px;box-shadow:0 20px 70px #0009}
+.inventoryHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.inventoryHead h2{margin:0;color:#d9b7ff}
+.itemGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.itemCard{min-height:125px;padding:12px;border-radius:16px;background:#252332;border:1px solid #ffffff18;text-align:left;cursor:pointer;position:relative}.itemCard.locked{opacity:.38;filter:grayscale(.8)}.itemCard.equipped{border:2px solid #d5a9ff;box-shadow:0 0 18px #9b6bc955}.itemEmoji{font-size:30px}.itemName{font-weight:900;margin-top:5px}.rarity{font-size:10px;opacity:.65;margin-top:3px}.equippedTag{position:absolute;top:8px;right:8px;font-size:9px;background:#7a559f;padding:4px 6px;border-radius:8px}
+#itemDetails{margin-top:14px;padding:16px;background:#10101a;border-radius:16px;min-height:115px}.detailTitle{font-size:20px;font-weight:900;color:#f0d9ff}.detailStats{margin-top:8px;font-weight:800}.detailDesc{margin-top:7px;line-height:1.45;opacity:.8}.inventoryFoot{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+#pickup{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:45;pointer-events:none;background:#0002}.pickupBox{padding:24px 30px;border-radius:24px;background:#171522f5;border:2px solid #d6b0ff;box-shadow:0 0 40px #b67cff55;text-align:center;animation:pickupPop .45s ease-out}.pickupEmoji{font-size:58px}.pickupTitle{font-size:11px;letter-spacing:2px;color:#d6b0ff;font-weight:900}.pickupName{font-size:25px;font-weight:900;margin:5px 0}.pickupStats{font-size:12px;opacity:.9}@keyframes pickupPop{0%{transform:scale(.65);opacity:0}100%{transform:scale(1);opacity:1}}
+.enemyAnim{filter:drop-shadow(0 0 8px #ffffff55)}
+@media(max-width:700px){.itemGrid{grid-template-columns:repeat(2,1fr)}#bagButton{top:58px;right:10px}}
+</style>
+</head>
+<body>
+<div id="gameWrap">
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div class="barRow"><div class="label">❤️ HP</div><div class="bar"><div id="hp" class="fill hp"></div></div></div>
+  <div class="barRow"><div class="label">✨ XP</div><div class="bar"><div id="xp" class="fill xp"></div></div></div>
+  <div class="barRow"><div class="label">💗 LOVE POWER</div><div class="bar"><div id="love" class="fill love"></div></div></div>
+  <div id="stats">
+    <span>⚔️ <b id="atk">10</b></span>
+    <span>🛡️ <b id="def">5</b></span>
+    <span>⭐ LV <b id="level">1</b></span>
+    <span>🎀 <b id="itemCount">0</b>/4</span>
+  </div>
+</div>
+
+<div id="zoneName">🌸 Little Meadow</div>
+<button id="bagButton" onclick="toggleInventory()">🎒 BAG</button>
+
+<div id="inventory">
+  <div class="inventoryBox">
+    <div class="inventoryHead"><h2>🎒 Her Little Collection</h2><button onclick="toggleInventory()">CLOSE</button></div>
+    <div class="itemGrid" id="itemGrid"></div>
+    <div id="itemDetails">Select an accessory to inspect it.</div>
+    <div class="inventoryFoot"><button onclick="toggleInventory()">Back to Adventure</button></div>
+  </div>
+</div>
+
+<div id="pickup"><div class="pickupBox"><div class="pickupTitle">✨ ACCESSORY FOUND ✨</div><div id="pickupEmoji" class="pickupEmoji"></div><div id="pickupName" class="pickupName"></div><div id="pickupStats" class="pickupStats"></div></div></div>
+
+<div id="hint">WASD / Arrow Keys to walk • Click characters to interact</div>
+
+<div id="dialogue">
+  <div class="dialogueBox">
+    <div id="dialogueName"></div>
+    <div id="dialogueText" class="dialogueText"></div>
+    <div class="small">Click / tap to close</div>
+  </div>
+</div>
+
+<div id="combat">
+  <div class="combatBox">
+    <div id="combatEnemy"></div>
+    <div class="enemyBar"><div id="enemyHP" class="enemyFill"></div></div>
+    <div id="combatText"></div>
+    <div class="actions">
+      <button class="attack" onclick="attack()">⚔️ ATTACK</button>
+      <button class="wrath" onclick="wrath()">💥 LOVE'S WRATH</button>
+      <button class="hug" onclick="hug()">💗 EMBRACE</button>
+    </div>
+  </div>
+</div>
+
+<div id="victory">
+  <div>
+    <div class="victoryTitle">VICTORY</div>
+    <div class="victorySub">You didn't defeat him.<br>You chose to hug him. 💗</div>
+    <button style="margin-top:28px;background:white;color:#703d5b" onclick="showMessage()">Continue →</button>
+  </div>
+</div>
+
+<div id="message">
+  <div class="messageBox">
+    <div class="heart">💗</div>
+    <h1>haaaiiiii</h1>
+    <p>
+  Hey babyyy, I just wanted to remind you how deeply I love you. 🥺💗ssss
+  <br><br>
+
+  Sometimes I don't even know how to put everything I feel for you into words because
+  “I love you” honestly feels so small compared to everything I feel in my heart.
+  I love you in the little moments, in our random conversations, in our silly jokes,
+  in the way you make me smile without even trying, and even in those quiet moments
+  where we're simply just there for each other.
+  <br><br>
+
+  You’ve become such a special part of my life, baby. I love having you around,
+  I love knowing that I get to call you mine, and I love every little thing that
+  makes you <i>you</i>. I wouldn't trade what we have for anything.
+  <br><br>
+
+  I hope you never forget that you are deeply loved, appreciated, and cherished by me.
+  You mean so much more to me than I could ever properly explain. And even if I don't
+  always find the perfect words, please know that my heart chooses you over and over again. 🤍
+  <br><br>
+
+  I love you, babyyy. So, so much. More than these little messages could ever hold. 🫂💗
+  <br><br>
+
+  my pretty girl, my baby, my love. always. 🌻💜
+</p>
+
+<div id="touch">
+  <div class="empty"></div><div class="pad" data-key="up">▲</div><div class="empty"></div>
+  <div class="pad" data-key="left">◀</div><div class="pad" data-key="down">▼</div><div class="pad" data-key="right">▶</div>
+</div>
+</div>
+
+<script>
+const canvas=document.getElementById('game');
+const ctx=canvas.getContext('2d');
+
+let W=innerWidth,H=innerHeight,dpr=devicePixelRatio||1;
+function resize(){
+  W=innerWidth;H=innerHeight;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize',resize);
+resize();
+
+const world={w:2600,h:1900};
+
+const keys={up:false,down:false,left:false,right:false};
+
+const player={
+  x:300,y:300,r:18,speed:2.8,
+  direction:'down',
+  moving:false,
+  walkFrame:0,
+  walkTimer:0,
+  walkSpeed:120,
+  hp:100,maxHp:100,
+  xp:0,xpNeed:100,
+  lvl:1,atk:10,def:5,love:0
+};
+
+let camera={x:0,y:0};
+let currentEnemy=null;
+let combat=false;
+let gameWon=false;
+let portalCooldown=0;
+let animTime=0;
+let enemyFlashUntil=0;
+
+const zones=[
+  {name:'🌸 Little Meadow',x:0,y:0,w:1300,h:900,color:'#5d8b58'},
+  {name:'🌲 Whispering Woods',x:1300,y:0,w:1300,h:900,color:'#385d43'},
+  {name:'🌙 Moonlit Ruins',x:0,y:900,w:1300,h:1000,color:'#4a4a68'},
+  {name:'✨ Celestial Garden',x:1300,y:900,w:1300,h:1000,color:'#5f5178'}
+];
+
+const npcs=[
+  {x:520,y:360,name:'Little Bunny',msg:"You know, you're someone's favorite person. Like... REALLY favorite.",sprite:'bunny'},
+  {x:1030,y:220,name:'Suspicious Cat',msg:"pspspsps— ...Okay fine. You're cute too.",sprite:'cat'},
+  {x:760,y:720,name:'Totally Wise Wizard',msg:"I possess knowledge beyond mortal comprehension. Also, your boyfriend is absolutely down horrendous for you.",sprite:'wizard'},
+  {x:390,y:730,name:'Frog',msg:"ribbit. ...That's frog for 'you're loved.'",sprite:'frog'},
+  {x:1540,y:360,name:'Knight',msg:"I've fought dragons, demons, and undead kings. But honestly? Your boyfriend is probably more scared of you.",sprite:'knight'},
+  {x:2100,y:610,name:'Tiny Merchant',msg:"Special offer! One hundred percent off. Because you're cute.",sprite:'merchant'},
+  {x:420,y:1260,name:'Moon Spirit',msg:"Even the moon knows someone is waiting for you at the end of this road.",sprite:'moon'},
+  {x:930,y:1580,name:'Sleepy Ghost',msg:"Boo. ...Sorry. I'm tired. Anyway, he loves you.",sprite:'ghost'},
+  {x:1690,y:1250,name:'Star Child',msg:"I counted the stars. Somehow, you're still my favorite one.",sprite:'star'},
+  {x:2240,y:1540,name:'Royal Guard',msg:"The castle lies ahead. Don't worry. The scary assassin is actually a loser.",sprite:'guard'}
+];
+
+const enemies=[
+  {x:850,y:470,name:'Tiny Slime',hp:35,xp:25,sprite:'slime',dead:false},
+  {x:1120,y:700,name:'Grumpy Goblin',hp:65,xp:40,sprite:'goblin',dead:false},
+  {x:1690,y:620,name:'Forest Wolf',hp:85,xp:55,sprite:'wolf',dead:false},
+  {x:2130,y:330,name:'Moon Bat',hp:105,xp:70,sprite:'bat',dead:false},
+  {x:660,y:1500,name:'Shadow Wraith',hp:130,xp:90,sprite:'wraith',dead:false},
+  {x:1120,y:1750,name:'Ruined Knight',hp:160,xp:110,sprite:'ruinedKnight',dead:false},
+  {x:1760,y:1650,name:'Celestial Beast',hp:190,xp:140,sprite:'dragon',dead:false}
+];
+
+const accessories=[
+  {x:650,y:170,name:'Purple Ribbon',emoji:'💜',rarity:'Common',atk:2,def:1,love:10,found:false,equipped:false,desc:'A soft purple ribbon in her favorite color. Small accessory, huge main-character energy.'},
+  {x:1180,y:820,name:'Capybara Plushie',emoji:'🦫',rarity:'Uncommon',atk:2,def:5,love:14,found:false,equipped:false,desc:'A tiny capybara buddy. It contributes absolutely nothing to combat strategy, but morale is immaculate.'},
+  {x:1120,y:1120,name:'Moon Hair Clip',emoji:'🌙',rarity:'Rare',atk:5,def:2,love:18,found:false,equipped:false,desc:'A little moon resting in her hair, because some things are simply too cute to remove.'},
+  {x:2010,y:1150,name:'Sunflower Bracelet',emoji:'🌻',rarity:'Special',atk:7,def:4,love:24,found:false,equipped:false,desc:'A sunflower bracelet for her favorite flower. Bright, warm, and impossible not to notice.'}
+];
+
+const portals=[
+  {x:1250,y:430,toX:1350,toY:430},
+  {x:1350,y:430,toX:1250,toY:430},
+  {x:650,y:850,toX:650,toY:950},
+  {x:650,y:950,toX:650,toY:850},
+  {x:1250,y:1450,toX:1350,toY:1450},
+  {x:1350,y:1450,toX:1250,toY:1450}
+];
+
+const boss={
+  x:2240,y:1700,name:'The Shadow Assassin',
+  hp:999999,dead:false,active:false
+};
+
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function zoneAt(x,y){return zones.find(z=>x>=z.x&&x<z.x+z.w&&y>=z.y&&y<z.y+z.h)||zones[0]}
+
+function setKey(k,v){keys[k]=v}
+
+function getMovementDirection(){
+  if(keys.up)return{x:0,y:-1,direction:'up'};
+  if(keys.down)return{x:0,y:1,direction:'down'};
+  if(keys.left)return{x:-1,y:0,direction:'left'};
+  if(keys.right)return{x:1,y:0,direction:'right'};
+  return null;
+}
+
+addEventListener('keydown',e=>{
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();
+  if(e.key==='ArrowUp'||e.key.toLowerCase()==='w')setKey('up',true);
+  if(e.key==='ArrowDown'||e.key.toLowerCase()==='s')setKey('down',true);
+  if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')setKey('left',true);
+  if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')setKey('right',true);
+});
+addEventListener('keyup',e=>{
+  if(e.key==='ArrowUp'||e.key.toLowerCase()==='w')setKey('up',false);
+  if(e.key==='ArrowDown'||e.key.toLowerCase()==='s')setKey('down',false);
+  if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')setKey('left',false);
+  if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')setKey('right',false);
+});
+
+document.querySelectorAll('.pad').forEach(el=>{
+  const key=el.dataset.key;
+  const on=e=>{e.preventDefault();setKey(key,true)};
+  const off=e=>{e.preventDefault();setKey(key,false)};
+  el.addEventListener('touchstart',on,{passive:false});
+  el.addEventListener('touchend',off,{passive:false});
+  el.addEventListener('touchcancel',off,{passive:false});
+});
+
+/* ---------- PIXEL ART ---------- */
+
+const PAL={
+  '.':null,
+  K:'#252332',k:'#15151d',
+  S:'#f4c7a1',s:'#d99a78',
+  H:'#6a3f32',h:'#3c2930',
+  P:'#f38bab',p:'#ffbfd5',
+  W:'#fff4f8',w:'#d9d3df',
+  B:'#4d6fa8',b:'#273c68',
+  G:'#76a85b',g:'#3e6b43',
+  L:'#a884d8',l:'#5a3e84',
+  Y:'#f6d76f',y:'#b58d35',
+  C:'#6e8790',c:'#394c57',
+  R:'#b84e61',r:'#6f2c3d',
+  O:'#d8864c',o:'#8a4b2f',
+  M:'#8ea1d8',m:'#4e5b8c',
+  V:'#76558e',v:'#382844',
+  E:'#f5edf7',
+  D:'#8a8b99',d:'#4a4b59'
+};
+
+const SPRITES={
+hero:[
+"....hhhhhh....","...hHHHHHHh...","..hHHSSSSHHh..","..hSSWSSWSSSh..",
+"..hSSSSSSSSSh..","...hSSSSSSh...","....PPPPPP....","...PPPPPPPP...",
+"..PPKKKKKKPP..","..PPKKKKKKPP..","...KKKKKKKK...","...KK....KK...",
+"..KK......KK..","..KK......KK..",".KK........KK.","................",
+"....p......p....","...pp......pp..."
+],
+bunny:[
+"...W....W...","..WWW..WWW..","..WWWWWWWW..",".WWSSSSSSWW.",
+".WSSWSSWSSW.",".WSSSSSSSSW.","..WSSSSSSW..","...PPPPPP...",
+"..PPKKKKPP..","..PKKKKKKPP.","...KKKKKK...","...KK..KK...",
+"..KK....KK..","..K......K...","..............",".............."
+],
+cat:[
+"..K......K..",".KK......KK.",".KKKKKKKKKK.",".KSSSSSSSSK.",
+".KSSWSSWSSK.",".KSSSSSSSSK.","..KSSSSSSKK.","..KPPPPPPK..",
+"..KPKKKKPK..","...KKKKKK...","...KK..KK...","..KK....KK..",
+"..............","..............","..............",".............."
+],
+wizard:[
+"....LLLL....","...LLLLLL...","..LLLLLLLL..","..LLKLLKLL..",
+"..LLSSSSLL..","...LSSSSL...","...LLLLLL...","..LLLLLLLL..",
+".LLLLLLLLLL.",".LLLKKKKLLL.","..LLKKKKLL..","..LL....LL..",
+"..LL....LL..",".LL......LL.","..............",".............."
+],
+frog:[
+"..GG....GG..",".GGGG..GGGG.","GGGGGGGGGGGG","GGWGGGGWGGG",
+"GGGGGGGGGGGG",".GGGGGGGGGG.","..GGGGGGGG..","...GGGGGG...",
+"...KKKKKK...","..KKKKKKKK..","..KK....KK..",".KK......KK.",
+"..............","..............","..............",".............."
+],
+knight:[
+"...CCCCCC...","..CCCCCCCC..",".CCCWWWWCCC.","..CCWKKWCC..",
+".CCCSSSSCCC.","..CCCCCCCC..","...CCCCCC...","..CCCCCCCC..",
+".CCKKKKKKCC.",".CCKKKKKKCC.","..CC....CC..","..CC....CC..",
+".CC......CC.",".CC......CC.","..............",".............."
+],
+merchant:[
+"...OOOOOO...","..OOOOOOOO..",".OOSSSSSSOO.",".OOSWSWSOOO.",
+".OOSSSSSSOO.","..OOOOOOOO..","...OOOOOO...","..OOOOOOOO..",
+".OOYYYYYYOO.",".OOYYYYYYOO.","..OO....OO..","..OO....OO..",
+".OO......OO.","..............","..............",".............."
+],
+moon:[
+"....MMMM....","...MMMMMM...","..MMMWWMMM..","..MMWWWWMM..",
+".MMWWWWWWMM."," .MMWWWWWWMM.".replace(" ",""),
+"..MMWWWWMM..","...MMWWMM...","....MMMM....","...VVVVVV...",
+"..VVVVVVVV..","..VV....VV..","...V....V...","..............",
+"..............",".............."
+],
+ghost:[
+"....WWWW....","..WWWWWWWW..",".WWWWWWWWWW.",".WWKWWKWWW..",
+".WWWWWWWWWW.",".WWWWWWWWWW.",".WWWWWWWWWW."," .WWWWWWWWWW.".replace(" ",""),
+".WWWWWWWWWW.","..WWWWWWWW..","..WW..WWWW..",".WW....WW...",
+"..............","..............","..............",".............."
+],
+star:[
+".....Y......","...YYYYY....","..YYYYYYY...","YYYYYYYYYYY.",
+"..YYYYYYY...","...YYYYY....","....YYY.....","...LLLLL....",
+"..LLLKKLL...","..LLKKKLL...","...LLKLL....","...L...L....",
+"..............","..............","..............",".............."
+],
+guard:[
+"...BBBBBB...","..BBBBBBBB..",".BBCCWWCCBB.",".BBCWKKWCBB.",
+".BBCCSSCCBB.","..BBBBBBBB..","...BBBBBB...","..BBBBBBBB..",
+".BBKKKKKKBB.",".BBKKKKKKBB.","..BB....BB..","..BB....BB..",
+".BB......BB.",".BB......BB.","..............",".............."
+],
+slime:[
+".....GG.....","...GGGGGG...","..GGGGGGGG..",".GGGGGGGGGG.",
+".GGGKWKGGGG.",".GGGGGGGGGG.",".GGGGGGGGGG.","..GGGGGGGG..",
+"...GGGGGG...","....GGGG....","..............","..............",
+"..............","..............","..............",".............."
+],
+goblin:[
+"...GGGGGG...","..GGGGGGGG..",".GGGSSSSGGG.",".GGSSKSSSGG.",
+".GGSSSSSSGG.","..GGSSSSGG..","...GGGGGG...","..GGRRRRGG..",
+".GGRRRRRRGG.",".GGKKKKKKGG.","..GG....GG..","..GG....GG..",
+".GG......GG.","..............","..............",".............."
+],
+wolf:[
+"....KK..KK..","...KKKKKKKK.","..KKSSSSSSKK",".KKSSWSSWSSK",
+".KSSSSSSSSSK",".KSSSSSSSSK.","..KSSSSSSK..","...KKKKKK...",
+"..KKKKKKKK..",".KK..KK..KK.","KK...KK...KK","..............",
+"..............","..............","..............",".............."
+],
+bat:[
+"KK........KK","KKKK....KKKK","KKKKKKKKKKKK",".KKKWWWWKKK.",
+"..KKWKKWKK..","...KKKKKK...","..KKKKKKKK..",".KKKKKKKKKK.",
+"KKKK....KKKK","KK........KK","..............","..............",
+"..............","..............","..............",".............."
+],
+wraith:[
+"....VVVV....","...VVVVVV...","..VVVVVVVV..",".VVVKWKVVVV.",
+".VVVVVVVVVV.",".VVVVVVVVVV.","..VVVVVVVV..","..VVVVVVVV..",
+".VVVV..VVVV.","VVVV....VVVV","..............","..............",
+"..............","..............","..............",".............."
+],
+ruinedKnight:[
+"...dddddd...","..dddddddd..",".ddDWWWWDdd.",".ddWKddKWdd.",
+".dddSSSSddd.","..dddddddd..","...dddddd...","..dddddddd..",
+".ddKKKKKKdd.",".ddKKKKKKdd.","..dd....dd..","..dd....dd..",
+".dd......dd.",".dd......dd.","..............",".............."
+],
+dragon:[
+"....RR..RR..","...RRRRRRRR.","..RRRRRRRRRR",".RRRWWRRWWR.",
+".RRRRRRRRRRR",".RRRRRRRRRR.","..RRRRRRRR..","...RRRRRR...",
+"..RRKKKKRR..",".RRKKKKKKRR.","RRR..RR..RRR","....RRRR....",
+"...RR..RR...","..............","..............",".............."
+],
+assassin:[
+".....hhhh.....","...hhhhhhhh...","..hhHHHHHHhh..","..hHSSSSSSHh..",
+"..hSskkkSsHh..","...hSSSSSh...","....hhhhhh....","...KKKKKKKK...",
+"..KKKKKKKKKK..",".KKKCCCCCKKK.","..KKCCCCCCKK..","...KK....KK...",
+"..KK......KK..",".KK........KK.","..K........K..","....K....K....",
+"...K......K...","..K........K.."
+]
+};
+
+function drawPixelSprite(name,x,y,scale=3,flip=false){
+  const sprite=SPRITES[name]||SPRITES.hero;
+  const px=scale;
+  const ox=Math.round(x-sprite[0].length*px/2);
+  const oy=Math.round(y-sprite.length*px/2);
+  for(let r=0;r<sprite.length;r++){
+    for(let c=0;c<sprite[r].length;c++){
+      const color=PAL[sprite[r][c]];
+      if(color){
+        ctx.fillStyle=color;
+        const cc=flip?(sprite[r].length-1-c):c;
+        ctx.fillRect(ox+cc*px,oy+r*px,px,px);
+      }
+    }
+  }
+}
+
+function drawName(text,x,y){
+  ctx.fillStyle='#fff';
+  ctx.font='11px Arial';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText(text,x,y);
+}
+
+/* ---------- V5 ENEMY ANIMATION ---------- */
+function updateEnemyAnimations(delta){
+  for(const e of enemies){
+    if(e.dead)continue;
+
+    if(e.animTime===undefined){
+      e.animTime=0;
+      e.animFrame=0;
+      e.moveAngle=e.phase||0;
+      e.moveTimer=0;
+      e.flip=false;
+      e.homeX=e.x;
+      e.homeY=e.y;
+    }
+
+    e.animTime+=delta;
+    e.moveTimer+=delta;
+
+    // Four-frame idle animation: enemies visibly bounce, squash and sway.
+    if(e.animTime>=140){
+      e.animTime=0;
+      e.animFrame=(e.animFrame+1)%4;
+    }
+
+    // Small patrol loop so enemies do not look like static statues.
+    if(e.moveTimer>=45){
+      e.moveTimer=0;
+      e.moveAngle+=0.22;
+      const nx=e.homeX+Math.cos(e.moveAngle)*28;
+      const ny=e.homeY+Math.sin(e.moveAngle)*18;
+      e.flip=nx<e.x;
+      e.x=nx;
+      e.y=ny;
+    }
+  }
+}
+
+function enemyAnimValues(e){
+  const frame=e.animFrame||0;
+  const bounce=[0,-3,-5,-2][frame];
+  const squash=[1,0.96,0.92,0.97][frame];
+  const stretch=[1,1.04,1.08,1.03][frame];
+  const tilt=[-0.035,0,0.035,0][frame];
+  return {bounce,squash,stretch,tilt};
+}
+
+/* ---------- MOVEMENT ---------- */
+
+function move(){
+  if(combat||gameWon){
+    player.moving=false;
+    return;
+  }
+
+  const m=getMovementDirection();
+
+  if(!m){
+    player.moving=false;
+    return;
+  }
+
+  player.moving=true;
+  player.direction=m.direction;
+
+  player.x+=m.x*player.speed;
+  player.y+=m.y*player.speed;
+
+  player.x=clamp(player.x,25,world.w-25);
+  player.y=clamp(player.y,25,world.h-25);
+
+  checkPortals();
+  checkPickups();
+  checkEnemyTouch();
+  checkBoss();
+}
+
+function checkPortals(){
+  if(portalCooldown>0){
+    portalCooldown--;
+    return;
+  }
+
+  for(const p of portals){
+    if(Math.hypot(player.x-p.x,player.y-p.y)<30){
+      player.x=p.toX;
+      player.y=p.toY;
+      portalCooldown=45;
+      player.walkFrame=0;
+      player.walkTimer=0;
+      return;
+    }
+  }
+}
+
+function checkPickups(){
+  for(const item of accessories){
+    if(item.found)continue;
+    if(Math.hypot(player.x-item.x,player.y-item.y)<38){
+      item.found=true;
+      item.equipped=true;
+      player.atk+=item.atk;
+      player.def+=item.def;
+      player.love=Math.min(100,player.love+item.love);
+      showItemPickup(item);
+      renderInventory();
+      updateHUD();
+    }
+  }
+}
+
+function showItemPickup(item){
+  document.getElementById('pickupEmoji').textContent=item.emoji;
+  document.getElementById('pickupName').textContent=item.name;
+  document.getElementById('pickupStats').textContent=`ATK +${item.atk} • DEF +${item.def} • LOVE +${item.love}`;
+  const p=document.getElementById('pickup');
+  p.style.display='flex';
+  clearTimeout(window.pickupTimer);
+  window.pickupTimer=setTimeout(()=>p.style.display='none',1800);
+}
+
+function checkEnemyTouch(){
+  if(combat)return;
+  for(const e of enemies){
+    if(!e.dead&&dist(player,e)<38){
+      startCombat(e);
+      break;
+    }
+  }
+}
+
+function checkBoss(){
+  if(boss.active)return;
+  if(accessories.some(a=>!a.found))return;
+
+  if(player.x>2050&&player.y>1600){
+    boss.active=true;
+    showDialogue('🗡️ A Quiet Voice',
+      'You collected everything.<br><br>Someone is waiting beyond the castle gate.');
+  }
+}
+
+/* ---------- COMBAT ---------- */
+
+function startCombat(enemy){
+  combat=true;
+  currentEnemy=enemy;
+  currentEnemy._hp=enemy.hp;
+
+  document.getElementById('combatEnemy').textContent=enemy.name;
+  document.getElementById('combatText').textContent=
+    enemy===boss
+      ? 'The assassin raises his twin daggers... then simply waits.'
+      : `A wild ${enemy.name} appeared!`;
+
+  document.getElementById('combat').style.display='flex';
+  updateEnemyBar();
+}
+
+function updateEnemyBar(){
+  if(!currentEnemy)return;
+  const pct=Math.max(0,currentEnemy._hp/currentEnemy.hp*100);
+  document.getElementById('enemyHP').style.width=pct+'%';
+}
+
+function attack(){
+  if(!combat)return;
+
+  if(currentEnemy===boss){
+    document.getElementById('combatText').textContent=
+      'He blocks the strike without counterattacking. Something feels different about this fight.';
+    return;
+  }
+
+  const dmg=Math.floor(player.atk+Math.random()*6);
+  currentEnemy._hp-=dmg;
+  document.getElementById('combatText').textContent=`You dealt ${dmg} damage!`;
+  updateEnemyBar();
+
+  if(currentEnemy._hp<=0){
+    defeatEnemy();
+    return;
+  }
+
+  enemyHit();
+}
+
+function enemyHit(){
+  const dmg=Math.max(1,Math.floor(5+Math.random()*8-player.def*.35));
+  player.hp-=dmg;
+
+  if(player.hp<=0){
+    player.hp=player.maxHp;
+    document.getElementById('combatText').textContent=
+      'You fell... but love refuses to let you stay down. ❤️';
+  }
+
+  updateHUD();
+}
+
+function defeatEnemy(){
+  const e=currentEnemy;
+  e.dead=true;
+  player.xp+=e.xp;
+  player.love=Math.min(100,player.love+5);
+  checkLevel();
+
+  document.getElementById('combatText').textContent=
+    `Victory! +${e.xp} XP and +5 LOVE.`;
+
+  setTimeout(()=>{
+    combat=false;
+    currentEnemy=null;
+    document.getElementById('combat').style.display='none';
+    updateHUD();
+  },650);
+}
+
+function checkLevel(){
+  while(player.xp>=player.xpNeed){
+    player.xp-=player.xpNeed;
+    player.lvl++;
+    player.xpNeed+=55;
+    player.atk+=4;
+    player.def+=2;
+    player.maxHp+=12;
+    player.hp=player.maxHp;
+    player.love=Math.min(100,player.love+8);
+  }
+}
+
+function wrath(){
+  if(!combat)return;
+
+  if(currentEnemy===boss){
+    document.getElementById('combatText').textContent=
+      '💥 LOVE’S WRATH erupts around him... but he refuses to fight back.';
+    return;
+  }
+
+  const accessoryAtk=accessories.filter(a=>a.found&&a.equipped).reduce((s,a)=>s+a.atk,0);
+  const dmg=player.atk*5+accessoryAtk*12+player.love*2;
+
+  currentEnemy._hp-=dmg;
+
+  document.getElementById('combatText').textContent=
+    `💥 LOVE'S WRATH dealt ${dmg} damage!`;
+
+  updateEnemyBar();
+
+  if(currentEnemy._hp<=0){
+    defeatEnemy();
+    return;
+  }
+
+  enemyHit();
+}
+
+function hug(){
+  if(!combat)return;
+
+  if(currentEnemy!==boss){
+    document.getElementById('combatText').textContent=
+      'Save the hug for someone special. 💗';
+    return;
+  }
+
+  combat=false;
+  gameWon=true;
+  document.getElementById('combat').style.display='none';
+  document.getElementById('victory').style.display='flex';
+}
+
+/* ---------- DIALOGUE ---------- */
+
+function showDialogue(name,msg){
+  document.getElementById('dialogueName').textContent=name;
+  document.getElementById('dialogueText').innerHTML=msg;
+  document.getElementById('dialogue').style.display='flex';
+}
+
+document.getElementById('dialogue').addEventListener('click',()=>{
+  document.getElementById('dialogue').style.display='none';
+});
+
+/* ---------- POINTER INTERACTION ---------- */
+
+canvas.addEventListener('pointerdown',e=>{
+  const r=canvas.getBoundingClientRect();
+  const sx=e.clientX-r.left;
+  const sy=e.clientY-r.top;
+  const wx=sx+camera.x;
+  const wy=sy+camera.y;
+
+  if(combat)return;
+
+  for(const n of npcs){
+    if(Math.hypot(wx-n.x,wy-n.y)<48){
+      showDialogue(n.name,n.msg);
+      return;
+    }
+  }
+
+  for(const item of accessories){
+    if(!item.found&&Math.hypot(wx-item.x,wy-item.y)<45){
+      showDialogue('✨ Mystery Accessory','Walk closer to pick this up!');
+      return;
+    }
+  }
+
+  if(boss.active&&Math.hypot(wx-boss.x,wy-boss.y)<60){
+    startCombat(boss);
+  }
+});
+
+/* ---------- V4 INVENTORY ---------- */
+let selectedItem=null;
+
+function toggleInventory(){
+  if(combat||gameWon)return;
+  const el=document.getElementById('inventory');
+  const open=el.style.display==='flex';
+  el.style.display=open?'none':'flex';
+  if(!open)renderInventory();
+}
+
+function renderInventory(){
+  const grid=document.getElementById('itemGrid');
+  grid.innerHTML='';
+  for(const item of accessories){
+    const card=document.createElement('div');
+    card.className='itemCard '+(!item.found?'locked ':'')+(item.equipped?'equipped':'');
+    card.innerHTML=`<div class="itemEmoji">${item.found?item.emoji:'❔'}</div><div class="itemName">${item.found?item.name:'???'}</div><div class="rarity">${item.found?item.rarity:'Not discovered'}</div>${item.equipped?'<div class="equippedTag">EQUIPPED</div>':''}`;
+    card.onclick=()=>selectInventoryItem(item);
+    grid.appendChild(card);
+  }
+  if(selectedItem)selectInventoryItem(selectedItem,false);
+}
+
+function selectInventoryItem(item,rerender=true){
+  selectedItem=item;
+  const box=document.getElementById('itemDetails');
+  if(!item.found){
+    box.innerHTML='<b>???</b><br><span style="opacity:.6">Explore the world and find this accessory.</span>';
+    return;
+  }
+  box.innerHTML=`<div class="detailTitle">${item.emoji} ${item.name}</div><div style="opacity:.65;font-size:11px">${item.rarity}</div><div class="detailStats">⚔️ ATK +${item.atk} &nbsp; 🛡️ DEF +${item.def} &nbsp; 💗 LOVE +${item.love}</div><div class="detailDesc">${item.desc}</div><div style="margin-top:10px"><button onclick="toggleEquip('${item.name.replace(/'/g,"\\'")}')">${item.equipped?'Unequip':'Equip'}</button></div>`;
+}
+
+function toggleEquip(name){
+  const item=accessories.find(a=>a.name===name);
+  if(!item||!item.found)return;
+  if(item.equipped){
+    item.equipped=false;
+    player.atk-=item.atk;
+    player.def-=item.def;
+    player.love=Math.max(0,player.love-item.love);
+  }else{
+    item.equipped=true;
+    player.atk+=item.atk;
+    player.def+=item.def;
+    player.love=Math.min(100,player.love+item.love);
+  }
+  renderInventory();
+  updateHUD();
+}
+
+/* ---------- HUD ---------- */
+
+function updateHUD(){
+  document.getElementById('hp').style.width=(player.hp/player.maxHp*100)+'%';
+  document.getElementById('xp').style.width=(player.xp/player.xpNeed*100)+'%';
+  document.getElementById('love').style.width=player.love+'%';
+  document.getElementById('atk').textContent=player.atk;
+  document.getElementById('def').textContent=player.def;
+  document.getElementById('level').textContent=player.lvl;
+  document.getElementById('itemCount').textContent=accessories.filter(a=>a.found).length;
+  document.getElementById('zoneName').textContent=zoneAt(player.x,player.y).name;
+}
+
+function showMessage(){
+  document.getElementById('victory').style.display='none';
+  document.getElementById('message').style.display='block';
+}
+
+/* ---------- PLAYER DRAWING ---------- */
+
+function drawPlayer(){
+  let bob=0;
+
+  if(player.moving){
+    bob=player.walkFrame===0?0:-2;
+  }
+
+  drawPixelSprite(
+    'hero',
+    player.x,
+    player.y-3+bob,
+    3,
+    player.direction==='left'
+  );
+
+  // V4: equipped accessories visibly follow the player.
+  const eq=accessories.filter(a=>a.found&&a.equipped);
+  ctx.save();
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  if(eq.some(a=>a.name==='Purple Ribbon'))ctx.fillText('💜',player.x-11,player.y-38+bob);
+  if(eq.some(a=>a.name==='Capybara Plushie'))ctx.fillText('🦫',player.x+27,player.y+8+bob);
+  if(eq.some(a=>a.name==='Moon Hair Clip'))ctx.fillText('🌙',player.x+12,player.y-34+bob);
+  if(eq.some(a=>a.name==='Sunflower Bracelet'))ctx.fillText('🌻',player.x+18,player.y+22+bob);
+  ctx.restore();
+}
+
+/* ---------- WORLD ---------- */
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+
+  const targetX=clamp(player.x-W/2,0,Math.max(0,world.w-W));
+  const targetY=clamp(player.y-H/2,0,Math.max(0,world.h-H));
+
+  camera.x+=(targetX-camera.x)*0.12;
+  camera.y+=(targetY-camera.y)*0.12;
+
+  ctx.save();
+  ctx.translate(-Math.round(camera.x),-Math.round(camera.y));
+
+  for(const z of zones){
+    ctx.fillStyle=z.color;
+    ctx.fillRect(z.x,z.y,z.w,z.h);
+    ctx.strokeStyle='#ffffff12';
+    ctx.lineWidth=3;
+    ctx.strokeRect(z.x,z.y,z.w,z.h);
+  }
+
+  /* roads */
+  ctx.fillStyle='#b79b6b';
+  ctx.fillRect(0,415,2600,75);
+  ctx.fillRect(615,0,70,1900);
+  ctx.fillRect(1240,1380,120,150);
+
+  ctx.fillStyle='#d4b77f';
+  ctx.fillRect(0,432,2600,40);
+  ctx.fillRect(630,0,40,1900);
+
+  /* decorative pixel trees */
+  for(let x=80;x<2600;x+=145){
+    for(let y=90;y<1900;y+=155){
+      if((x+y)%5===0)continue;
+
+      ctx.fillStyle='#263e2b';
+      ctx.fillRect(x-5,y+13,10,24);
+
+      ctx.fillStyle='#315b39';
+      ctx.fillRect(x-20,y-12,40,25);
+      ctx.fillRect(x-14,y-25,28,18);
+      ctx.fillRect(x-8,y-34,16,12);
+    }
+  }
+
+  /* portal pads */
+  for(const p of portals){
+    ctx.fillStyle='#ffffff35';
+    ctx.fillRect(p.x-24,p.y-24,48,48);
+    ctx.fillStyle='#d8b6ff55';
+    ctx.fillRect(p.x-14,p.y-14,28,28);
+  }
+
+  /* accessories — collectible world objects */
+  for(const a of accessories){
+    if(a.found)continue;
+    const bob=Math.sin(animTime/260+a.x)*3;
+    ctx.save();
+    ctx.globalAlpha=.95;
+    ctx.font='26px sans-serif';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText(a.emoji,a.x,a.y+bob);
+    ctx.font='10px Arial';
+    ctx.fillText('✦',a.x,a.y-25+bob);
+    ctx.restore();
+  }
+
+  /* NPCs */
+  for(const n of npcs){
+    drawPixelSprite(n.sprite,n.x,n.y-4,3);
+    drawName(n.name,n.x,n.y+43);
+  }
+
+  /* enemies — V5: visible four-frame idle + patrol animation */
+  for(const e of enemies){
+    if(e.dead)continue;
+
+    const a=enemyAnimValues(e);
+
+    // Animated shadow makes the vertical movement obvious.
+    ctx.save();
+    ctx.fillStyle='#0008';
+    ctx.beginPath();
+    ctx.ellipse(e.x,e.y+27,17*a.stretch,5*a.squash,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(e.x,e.y-3+a.bounce);
+    ctx.rotate(a.tilt);
+    ctx.scale(a.stretch,a.squash);
+
+    if(performance.now()<enemyFlashUntil){
+      ctx.globalAlpha=.35;
+      drawPixelSprite(e.sprite,0,0,3,e.flip);
+      ctx.globalAlpha=1;
+      ctx.fillStyle='#fff';
+      ctx.globalAlpha=.45;
+      ctx.fillRect(-24,-24,48,48);
+    }else{
+      drawPixelSprite(e.sprite,0,0,3,e.flip);
+    }
+    ctx.restore();
+
+    drawName(e.name,e.x,e.y+42+a.bounce);
+  }
+
+  /* castle */
+  ctx.fillStyle='#272430';
+  ctx.fillRect(2050,1580,430,280);
+
+  ctx.fillStyle='#3d3547';
+  ctx.fillRect(2110,1510,80,350);
+  ctx.fillRect(2310,1510,80,350);
+  ctx.fillRect(2190,1640,120,220);
+
+  ctx.fillStyle='#a76a8c';
+  ctx.fillRect(2200,1720,100,140);
+
+  ctx.fillStyle='#d9b0cf';
+  ctx.fillRect(2128,1540,44,18);
+  ctx.fillRect(2328,1540,44,18);
+
+  /* assassin */
+  if(boss.active){
+    drawPixelSprite('assassin',boss.x,boss.y-10,4);
+    drawName('The Shadow Assassin',boss.x,boss.y+75);
+  }
+
+  drawPlayer();
+  drawName('YOU',player.x,player.y+43);
+
+  ctx.restore();
+}
+
+/* ---------- GAME LOOP ---------- */
+
+function updateMovementAnimation(delta){
+  if(!player.moving){
+    player.walkFrame=0;
+    player.walkTimer=0;
+    return;
+  }
+
+  player.walkTimer+=delta;
+
+  if(player.walkTimer>=player.walkSpeed){
+    player.walkTimer=0;
+    player.walkFrame=(player.walkFrame+1)%2;
+  }
+}
+
+let lastTime=performance.now();
+
+function loop(now){
+  const delta=Math.min(32,now-lastTime);
+  animTime+=delta;
+  lastTime=now;
+
+  updateMovementAnimation(delta);
+  updateEnemyAnimations(delta);
+  move();
+  updateHUD();
+  draw();
+
+  requestAnimationFrame(loop);
+}
+
+updateHUD();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
